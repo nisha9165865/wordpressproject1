@@ -1,0 +1,314 @@
+                                                    WORDPRESS FUNCTION
+HEADER.PHP
+
+1. <html <?php language_attributes(); ?>>
+2. <meta charset="<?php bloginfo( 'charset' ); ?>">
+3. <?php wp_head(); ?>
+4. href="<?= get_stylesheet_directory_uri();?>/assetsweb/
+5. <body <?php body_class(); ?>>
+    <?php wp_body_open(); ?>
+6. <?= site_url('/');?>
+7. MENU DYNAMIC - <?php wp_nav_menu( array( 'container'=>false,'container_class' => false, 'theme_location' => 'primary' ) );?>
+
+FOOTER.PHP
+ 
+1.FOOTER MENU DYNAMIC
+ <ul class="footer_links">
+ <?php
+  $obj = wp_get_nav_menu_object('footer');
+  $items = wp_get_nav_menu_items($obj->term_id);
+ // echo "<pre>";
+// 	print_r($items);
+ foreach($items as $item){
+ ?>
+<li><a href="<?= $item->url;?>"><?= $item->title;?></a></li>
+<?php } ?>
+
+2.FOOTER MENU 2 DYNAMIC SAME
+3. include upper of body close<?php wp_footer(); ?>
+
+PAGE.PHP
+
+1.DYNAMIC BREADCRUMB MENU
+global $post; 
+global $wp_query;
+
+
+     $post_obj = $wp_query->get_queried_object();
+    
+     $Page_ID = $post->ID;
+    
+     
+    //  echo $Page_ID;       
+        if(!empty(get_field('breadcrumb_image',$Page_ID))){
+        ?>
+        <section class="inner-banner bg-overlay-black-6 bg-holder"
+        style="background: url(<?= get_field('breadcrumb_image',$Page_ID);?>) no-repeat bottom center / cover;">
+        <?php
+        }
+        else{
+        ?>
+        <section class="inner-banner bg-overlay-black-6 bg-holder"
+        style="background: url(<?= get_stylesheet_directory_uri();?>/assetsweb/images/bg/inner_bg.png) no-repeat bottom center / cover;">
+        <?php
+        }
+        ?>
+	    
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="inner-banner-tittle">
+                        <h1><?= get_the_title();?></h1>
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="<?= site_url('/');?>">Home</a></li>
+                            <?php
+                            if(!empty(wp_get_post_parent_id( $post->post->ID ))){ ?>
+                                 <li class="breadcrumb-item"><?php  echo get_the_title( wp_get_post_parent_id( $post->post->ID ) ); ?></li>
+                           <?php }
+                            
+                            ?>
+                           
+                            <li class="breadcrumb-item active"><?= get_the_title();?></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+ADD FUNCTION.PHP FOR BREADCRUMB MENU - 
+function my_menu_parent($theme_location) {
+    $locations = get_nav_menu_locations();
+    if ( isset( $locations[ $theme_location ] ) ) {
+        $menu = wp_get_nav_menu_object( $locations[ $theme_location ] );
+        $menu_items = wp_get_nav_menu_items($menu->term_id);
+        _wp_menu_item_classes_by_context( $menu_items );
+        $breadcrumbs = array();
+
+        foreach ( $menu_items as $menu_item ) {         
+            if ($menu_item->current_item_ancestor) {
+                $breadcrumbs[] = $menu_item->title;
+            }
+        }
+
+        return $breadcrumbs;
+     }
+}
+
+INDEX.PHP
+1. SLIDER DYNAMIC
+ <?php 
+                 $args = array( 'post_type' => 'home_slider',  'posts_per_page' => -1 , 'order'=>'ASC', 'post_status'=>'publish' );
+                 $slider = new WP_Query( $args );
+            ?>
+            <div id="main_slider" class="slides nivoSlider">
+                <?php 
+    			    foreach($slider->posts as $key=>$row_slider){
+    				$slider_id = $row_slider->ID;
+    			?>
+    			<img src="<?php echo get_the_post_thumbnail_url($slider_id);?>" alt="slider" title="#slider-direction-<?= $key+1;?>" />
+<?php } ?>
+        		
+        		
+            </div>
+            <?php 
+			foreach($slider->posts as $key=>$row_slider){
+			$slider_id = $row_slider->ID;
+	        ?>
+            <div id="slider-direction-<?= $key+1;?>" class="t-cn slider-direction">
+                <div class="slider-content slide-1">
+                    <div class="container">
+                        <div class="sliderCaptionWrap">
+                            <h2 class="caption_title"><?php echo get_the_title($slider_id);?></h2>
+                            <p class="sub_caption"><?php echo get_the_excerpt($slider_id);?></p>
+                            <a href="#" class="btn btn_theme"><?php echo get_field("sliderbutton",$slider_id);?></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php } ?>
+        		
+2.FOR VIDEO DYNAMIC 
+<a href="<?= wp_oembed_get("homeaboutvideo",7);?>"
+3 . <?php
+
+                                    $args = array(
+                                        'post_type'      => 'page',
+                                        'posts_per_page' => -1,
+                                        'post_parent'    => 71,
+                                        'order'          => 'ASC',
+                                        'orderby'        => 'menu_order'
+                                     );
+                                    
+                                    
+                                    $parent = new WP_Query( $args );
+                                    
+                                    
+                                    if ( $parent->have_posts() ) : ?>
+                                    
+                                        <?php while ( $parent->have_posts() ) : $parent->the_post(); ?>
+                        <div class="item">
+                            <div class="we_offer_box">
+                                <img src="<?= get_the_post_thumbnail_url($parent->ID);?>" class="img-fluid" alt="">
+                                <div class="we_offer_overlap">
+                                    <h2><?= get_the_title();?></h2>
+                                    <p><?php echo substr(get_the_excerpt($parent->ID),0,100); ?></p>
+                                    <a href="<?php the_permalink(); ?>">Read More <i class="bi bi-arrow-right ms-2"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endwhile; ?>
+                                    
+                       <?php endif; wp_reset_postdata(); ?>
+4. CUSTOM POST DYNAMIC  CODE
+ <?php
+            $args = array(
+                'post_type' => 'hall_of_name',
+                'order' => 'asc',
+                'posts_per_page' => 4,
+                'post_status' => 'publish'
+                );
+            
+            ?>
+ <?php $loop = new wp_Query($args);
+
+while($loop->have_posts()) : $loop->the_post(); ?>
+<?php endwhile; wp_reset_postdata(); ?>
+
+5. REPEATER DYNAMIC CODE
+ <?php
+				                        	$tournamentrepeator = get_field('tournamentrepeator',7);
+					                        foreach($tournamentrepeator as $tournamentrepeator){
+				                          	?>
+                                        <tr>
+                                            <td><?= $tournamentrepeator['date'];?></td>
+                                            <td>
+                                               <div class="d-flex align-items-center w-100">
+                                                    <div class="vs_logo w-100">
+                                                        <h5><?= $tournamentrepeator['nws'];?></h5>
+6.CONTACT FORM 7 DYNAMIC CODE
+<?= do_shortcode('[contact-form-7 id="38" title="homebannerform"]');?>
+
+7. SHOW MINIMUM CODE <?php echo substr(get_the_excerpt(11),0,600); ?>
+
+BLOG SECTION DYNAMIC
+
+1.CREATE POST IN WPADMIN POST AND PASTE THIS CODE
+<?php
+								 
+								$args=array('post_status' => 'publish', 'posts_per_page' => 1 );             
+								$my_query = null;
+								$my_query = new WP_Query($args);
+								if( $my_query->have_posts() ) {
+								 while ($my_query->have_posts()) : $my_query->the_post();
+						    ?>
+						    <?php
+									endwhile; 
+										}
+										wp_reset_postdata();
+			
+		   						?> 
+                            <?php
+								$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+								$args=array( 'post_status' => 'publish', 'posts_per_page' => 3, 'paged' => $paged);             
+								$my_query = null;
+								$my_query = new WP_Query($args);
+								if( $my_query->have_posts() ) {
+								 while ($my_query->have_posts()) : $my_query->the_post();
+						    ?>
+AND IN LAST PASTE
+ <?php
+									endwhile;
+										}
+										wp_reset_postdata();
+			
+		   						?>
+2. CREATE single-post.php page AND PASTE BLOG DETAIL HTML 
+FOR DATE -  <?php echo get_the_date('M jS, Y'); ?>
+FOR AUTHOR - global $post; 
+$author_id = $post->post_author; 
+<?php echo  get_the_author_meta('display_name',$author_id); ?>
+
+3. DYNAMIC CATEGORIES
+<ul>
+                                             <?php
+                                			  	$cat_args=array(			 
+                                				  'orderby' => 'name', // the order 
+                                				  'order' => 'ASC' // asc or desc
+                                			);
+                                			
+                                			$categories=get_categories($cat_args);
+                                			  foreach($categories as $category) {
+                                			  ?>
+                                                <li><a href="javascript:void(0)"><?php echo $category->name; ?></a></li>
+                                             <?php } ?>
+                            </ul>
+
+4. DYNAMIC RECENT POST
+<?php
+                                $args=array('post_status' => 'publish', 'posts_per_page' => 3);             
+								$my_query = null;
+								$my_query = new WP_Query($args);
+								if( $my_query->have_posts() ) {
+								 while ($my_query->have_posts()) : $my_query->the_post();
+						    ?>
+                                <div class="single-site-video">
+                            
+                                    <div class="blog-video-img"> <a href="<?php the_permalink(); ?>"><img
+                                                src="<?php the_post_thumbnail_url(); ?>" alt=""></a> </div>
+                                    <div class="blog-video-text">
+                                        <h6><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h6>
+                                        <span><?php echo get_the_date('M jS, Y'); ?></span>
+                                    </div>
+                                </div>
+                                  <?php
+                    				endwhile;
+                    				}
+                    				wp_reset_postdata();
+			                      ?> 
+5. BLOG DETAIL PAGE page-blog.php
+<?php
+								$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+								$args=array( 'post_status' => 'publish', 'posts_per_page' => 2, 'paged' => $paged);             
+								$my_query = null;
+								$my_query = new WP_Query($args);
+								if( $my_query->have_posts() ) {
+								 while ($my_query->have_posts()) : $my_query->the_post();
+						    ?>
+
+
+PAGINATION
+
+ <?php
+            $total_pages = $my_query->max_num_pages;
+            // print_r($total_pages);
+             if($total_pages > 1){
+             ?>
+             <!--<p>vbjhngvmnhb</p>-->
+             <div class="wp-pagenavi">
+                 <!--<span class="pages">Pages</span>-->
+                 <!--<span class="current">1</span>-->
+                 <a class="page larger" title="Page 2" href="<?= get_pagenum_link($paged - 1);?>"><< Previous</a>
+                 <?php
+                 for($i=1;$i<=$total_pages;$i++){
+                     ?>
+                 <a class="page larger" title="Page 3" href="<?= get_pagenum_link($i);?>"><?= $i;?></a>
+                 <?php
+               }
+                   ?>
+                 <a class="page larger" title="Page 3" href="<?= get_pagenum_link($paged + 1);?>"> Next >></a>
+                 <!--<a class="page larger" title="Page 4" href="#">4</a>-->
+                 <!--<a class="nextpostslink" rel="next" href="#">»</a>-->
+                 
+                
+             </div>
+             
+             <?php
+             }
+            
+            ?>
+
+
+	
+                  	
+                  	
+
